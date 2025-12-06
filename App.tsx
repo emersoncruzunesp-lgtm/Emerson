@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Play, Pause, CheckCircle, Trash2, Edit2, RotateCcw, 
-  Calendar, Tag, Clock, Download, Printer, Filter, Sun, Moon, 
-  Sparkles, X, Plus, User, Users, ChevronDown, LogOut
+  Tag, Download, Printer, Sun, Moon, 
+  Sparkles, X, Plus, User, ChevronDown
 } from 'lucide-react';
 import { IActivity, ITag, IUser } from './types';
 import * as storage from './services/storage';
@@ -10,6 +10,13 @@ import * as aiService from './services/ai';
 import { StatsChart } from './components/StatsChart';
 
 // --- Utils ---
+const generateId = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+};
+
 const formatTime = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -170,7 +177,7 @@ const App: React.FC = () => {
     if (!newUserName.trim()) return alert("Digite um nome para o usuário.");
 
     const newUser: IUser = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: newUserName.trim()
     };
 
@@ -194,7 +201,7 @@ const App: React.FC = () => {
     if (!inputName || !inputEst) return alert("Preencha o nome e a estimativa!");
     
     const newAct: IActivity = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       title: inputName,
       tag: inputTag || (tags[0]?.name || 'Geral'),
       estimatedMinutes: parseInt(inputEst),
@@ -370,6 +377,7 @@ const App: React.FC = () => {
 
   // --- Helper for Filtering ---
   const checkPeriodFilter = (activity: IActivity, periodType: 'week' | 'month') => {
+    if (!activity.date) return false;
     const activityDate = new Date(activity.date + 'T00:00:00');
     const now = new Date();
     
